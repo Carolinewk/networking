@@ -54,14 +54,14 @@ const server = http.createServer(async (req, res) => {
 const wss = new WebSocketServer({ server });
 
 function now(): number {
-  return Math.floor(Date.now());
+  return Date.now();
 }
 
 const watchers = new Map<string, Set<WebSocket>>();
 
-setInterval(() => {
-  console.log("Server time:", now());
-}, 1000);
+// setInterval(() => {
+//   console.log("Server time:", now());
+// }, 1000);
 
 if (!existsSync("./db")) {
   mkdirSync("./db");
@@ -76,7 +76,7 @@ wss.on("connection", (ws) => {
         break;
       case "post": {
         const server_time = now();
-        const client_time = Math.floor(message.time);
+        const client_time = message.time;
         const room        = message.room;
         const name        = message.name;
         const data        = message.data;
@@ -95,9 +95,9 @@ wss.on("connection", (ws) => {
         const room_watchers = watchers.get(room);
         if (room_watchers) {
           const info = { $: "info_post", room, index, server_time, client_time, name, data };
-          const json = JSON.stringify(info);
+          const post = JSON.stringify(info);
           for (const watcher of room_watchers) {
-            watcher.send(json);
+            watcher.send(post);
           }
         }
         break;
@@ -108,10 +108,10 @@ wss.on("connection", (ws) => {
         const path = `./db/${room}.jsonl`;
         if (existsSync(path)) {
           const content = readFileSync(path, "utf-8");
-          const lines   = content.trim().split("\n");
+          const lines   = content.trim().split("\n").filter(l => l.trim());
           for (let index = from; index < lines.length; index++) {
             const line = lines[index];
-            if (line && line.trim()) {
+            if (line) {
               const record      = JSON.parse(line);
               const server_time = record.server_time;
               const client_time = record.client_time;
