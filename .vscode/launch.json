@@ -1,0 +1,23 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "pwa-node",
+      "request": "launch",
+      "name": "Debug Bun server.ts",
+      "runtimeExecutable": "bun",
+      "runtimeArgs": ["--inspect-wait", "${workspaceFolder}/src/server.ts"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "type": "pwa-node",
+      "request": "attach",
+      "name": "Attach to Bun (9229)",
+      "port": 9229,
+      "restart": false,
+      "skipFiles": ["<node_internals>/**"]
+    }
+  ]
+}
