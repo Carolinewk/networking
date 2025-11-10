@@ -35,3 +35,7 @@ walkers/.serve.pid
 
 # Local scratch
 .stuff/
+
+# Windows Zone Identifier artifacts
+*:Zone.Identifier
+*Zone.Identifier*

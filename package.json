@@ -3,10 +3,11 @@
   "type": "module",
   "scripts": {
     "check": "tsc --target esnext --noEmit --skipLibCheck",
-    "dev": "bun run index.ts",
-    "server": "bun run src/server.ts",
+    "dev": "bash -lc 'scripts/clean_zone_identifiers.sh; bun run index.ts'",
+    "server": "bash -lc 'scripts/clean_zone_identifiers.sh; bun run src/server.ts'",
     "client": "bun run client_cli.ts",
-    "deploy": "bash scripts/deploy.sh"
+    "deploy": "bash scripts/deploy.sh",
+    "clean:zoneid": "bash scripts/clean_zone_identifiers.sh"
   },
   "dependencies": {
     "ws": "^8.18.0"

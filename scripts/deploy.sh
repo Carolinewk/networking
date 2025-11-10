@@ -6,6 +6,9 @@ REMOTE_DIR="~/rooms"
 
 echo "[DEPLOY] Syncing repo to ${REMOTE_HOST}:${REMOTE_DIR}"
 
+# Ensure Zone.Identifier artifacts are not synced
+bash scripts/clean_zone_identifiers.sh >/dev/null 2>&1 || true
+
 rsync -az --delete \
   --exclude '.git' \
   --exclude 'node_modules' \
