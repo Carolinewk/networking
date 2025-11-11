@@ -5,6 +5,7 @@
     "check": "tsc --target esnext --noEmit --skipLibCheck",
     "dev": "bash -lc 'scripts/clean_zone_identifiers.sh; bun run index.ts'",
     "server": "bash -lc 'scripts/clean_zone_identifiers.sh; bun run src/server.ts'",
+    "server:debug": "bash -lc 'scripts/clean_zone_identifiers.sh; bun --inspect-brk=9229 run src/server.ts'",
     "client": "bun run client_cli.ts",
     "deploy": "bash scripts/deploy.sh",
     "clean:zoneid": "bash scripts/clean_zone_identifiers.sh"
@@ -13,6 +14,7 @@
     "ws": "^8.18.0"
   },
   "devDependencies": {
+    "@types/bun": "^1.3.2",
     "@types/ws": "^8.5.13"
   }
 }

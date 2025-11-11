@@ -2,22 +2,59 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "type": "pwa-node",
+      "name": "Bun: Launch server.ts",
+      "type": "node",
       "request": "launch",
-      "name": "Debug Bun server.ts",
       "runtimeExecutable": "bun",
-      "runtimeArgs": ["--inspect-wait", "${workspaceFolder}/src/server.ts"],
+      "runtimeArgs": [
+        "--inspect-brk",
+        "run"
+      ],
+      "program": "${workspaceFolder}/src/server.ts",
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
-      "skipFiles": ["<node_internals>/**"]
+      "sourceMaps": true,
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/**",
+        "!**/node_modules/**"
+      ],
+      "smartStep": true,
+      "trace": true,
+      "skipFiles": [
+        "<node_internals>/**",
+        "**/node_modules/**"
+      ]
     },
     {
-      "type": "pwa-node",
+      "name": "Bun: Launch and Attach",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "bun",
+      "runtimeArgs": [
+        "--inspect-brk=9229",
+        "run",
+        "${workspaceFolder}/src/server.ts"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "sourceMaps": true,
+      "smartStep": true,
+      "skipFiles": [
+        "<node_internals>/**",
+        "**/node_modules/**"
+      ]
+    },
+    {
+      "name": "Bun: Attach 9229",
+      "type": "node",
       "request": "attach",
-      "name": "Attach to Bun (9229)",
       "port": 9229,
-      "restart": false,
-      "skipFiles": ["<node_internals>/**"]
+      "address": "127.0.0.1",
+      "restart": true,
+      "skipFiles": [
+        "<node_internals>/**",
+        "**/node_modules/**"
+      ]
     }
   ]
 }
