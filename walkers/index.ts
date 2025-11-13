@@ -143,7 +143,7 @@ function render() {
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   const curr_tick = game.server_tick();
-  const state     = game.compute_render_state();
+  const state     = game.compute_render_state(); // retorna no passado caso a atualizacoa de state seja do player
 
   ctx.fillStyle    = "#000";
   ctx.font         = "14px monospace";

@@ -152,7 +152,7 @@ export class Vibi<S, P> {
       if (!timeline.has(official_tick)) {
         timeline.set(official_tick, []);
       }
-      timeline.get(official_tick)!.push(post);
+      timeline.get(official_tick)!.push(post); // reconstruindo timeline everytime
     }
 
     for (const post of this.local_posts.values()) {
