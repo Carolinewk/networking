@@ -4,22 +4,39 @@ import http from "http";
 import { readFile } from "fs/promises";
 
 // Build walkers bundle on startup (idempotent)
-async function build_walkers() {
+// async function build_walkers() {
+//   try {
+//     const r1 = Bun.spawnSync({ cmd: [process.execPath, "build", "src/client.ts", "--outdir", "walkers/dist", "--target=browser", "--format=esm"] });
+//     const r2 = Bun.spawnSync({ cmd: [process.execPath, "build", "src/vibi.ts", "--outdir", "walkers/dist", "--target=browser", "--format=esm"] });
+//     const r3 = Bun.spawnSync({ cmd: [process.execPath, "build", "walkers/index.ts", "--outdir", "walkers/dist", "--target=browser", "--format=esm"] });
+//     if (!r1.success || !r2.success || !r3.success) {
+//       console.error("[BUILD] walkers build failed", { r1: r1.success, r2: r2.success, r3: r3.success });
+//     } else {
+//       console.log("[BUILD] walkers bundle ready");
+//     }
+//   } catch (e) {
+//     console.error("[BUILD] error while building walkers:", e);
+//   }
+// }
+
+// await build_walkers();
+
+async function build_chasers() {
   try {
-    const r1 = Bun.spawnSync({ cmd: [process.execPath, "build", "src/client.ts", "--outdir", "walkers/dist", "--target=browser", "--format=esm"] });
-    const r2 = Bun.spawnSync({ cmd: [process.execPath, "build", "src/vibi.ts", "--outdir", "walkers/dist", "--target=browser", "--format=esm"] });
-    const r3 = Bun.spawnSync({ cmd: [process.execPath, "build", "walkers/index.ts", "--outdir", "walkers/dist", "--target=browser", "--format=esm"] });
+    const r1 = Bun.spawnSync({ cmd: [process.execPath, "build", "src/client.ts", "--outdir", "chasers/dist", "--target=browser", "--format=esm"] });
+    const r2 = Bun.spawnSync({ cmd: [process.execPath, "build", "src/vibi.ts", "--outdir", "chasers/dist", "--target=browser", "--format=esm"] });
+    const r3 = Bun.spawnSync({ cmd: [process.execPath, "build", "chasers/index.ts", "--outdir", "chasers/dist", "--target=browser", "--format=esm"] });
     if (!r1.success || !r2.success || !r3.success) {
-      console.error("[BUILD] walkers build failed", { r1: r1.success, r2: r2.success, r3: r3.success });
+      console.error("[BUILD] chasers build failed", { r1: r1.success, r2: r2.success, r3: r3.success });
     } else {
-      console.log("[BUILD] walkers bundle ready");
+      console.log("[BUILD] chasers bundle ready");
     }
   } catch (e) {
-    console.error("[BUILD] error while building walkers:", e);
+    console.error("[BUILD] error while building chasers:", e);
   }
 }
 
-await build_walkers();
+await build_chasers();
 
 // Simple static server + WebSocket on the same port
 const server = http.createServer(async (req, res) => {
@@ -29,7 +46,8 @@ const server = http.createServer(async (req, res) => {
     if (path === "/") path = "/index.html";
 
     let filesystem_path: string;
-    filesystem_path = path.startsWith("/dist/") ? `walkers${path}` : `walkers${path}`;
+    // filesystem_path = path.startsWith("/dist/") ? `walkers${path}` : `walkers${path}`;
+    filesystem_path = path.startsWith("/dist/") ? `chasers${path}` : `chasers${path}`;
 
     let ct = "application/octet-stream";
     if (path.endsWith(".html")) {

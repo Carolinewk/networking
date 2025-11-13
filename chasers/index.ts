@@ -1,50 +1,56 @@
 import { Vibi } from "../src/vibi.ts";
 import { on_sync, ping, gen_name } from "../src/client.ts";
-import pkg from "../package.json" assert { type: "json" };
 
-// Player type
-type Player = {
+type Chaser = {
+    x: number;
+    y: number;
+    score: number;
+};
+
+type Avatar = "woman" | "man" 
+
+type ChasedPlayer = {
   px: number;
   py: number;
   w: number;
   a: number;
   s: number;
   d: number;
+  avatar: Avatar
 };
 
-// Game state: map from character to player
 type GameState = {
-  [char: string]: Player;
+  [char: string]: Chaser | ChasedPlayer;
 };
 
-// Post types
 type GamePost =
-  | { $: "spawn"; nick: string; px: number; py: number }
+  | { $: "spawn"; nick: string; role: Chaser | ChasedPlayer; avatar: Avatar; px: number; py: number }
   | { $: "down"; key: "w" | "a" | "s" | "d"; player: string }
-  | { $: "up"; key: "w" | "a" | "s" | "d"; player: string };
+  | { $: "up"; key: "w" | "a" | "s" | "d"; player: string }
+  | { $: "click"; role: Chaser | ChasedPlayer; x: number; y: number;}
+  | { $: "move_mouse"; role: Chaser | ChasedPlayer; x: number; y: number; };
 
-// Game configuration
-const TICK_RATE         = 24; // ticks per second
-const TOLERANCE         = 300; // max tolerance in ms (adaptive per client)
+const TICK_RATE         = 30; // ticks per second
+const TOLERANCE         = 100; // max tolerance in ms (adaptive per client)
 const PIXELS_PER_SECOND = 200;
 const PIXELS_PER_TICK   = PIXELS_PER_SECOND / TICK_RATE;
 
-// Initial state: empty map
 const initial: GameState = {};
 
-// on_tick: update player positions based on WASD state
 function on_tick(state: GameState): GameState {
   const new_state: GameState = {};
 
   for (const [char, player] of Object.entries(state)) {
+    if ('')
     new_state[char] = {
-      px: player.px + (player.d * PIXELS_PER_TICK) + (player.a * -PIXELS_PER_TICK),
+      x: player.x + (player.d * PIXELS_PER_TICK) + (player.a * -PIXELS_PER_TICK),
       py: player.py + (player.s * PIXELS_PER_TICK) + (player.w * -PIXELS_PER_TICK),
       w: player.w,
       a: player.a,
       s: player.s,
       d: player.d,
     };
+
   }
 
   return new_state;
@@ -104,7 +110,7 @@ const smooth = (past: GameState, curr: GameState): GameState => {
 };
 
 const game: Vibi<GameState, GamePost> = create_game(room, smooth);
-document.title = `Walkers ${pkg.version}`;
+// document.title = `Walkers ${pkg.version}`;
 
 const key_states: Record<string, boolean> = { w: false, a: false, s: false, d: false };
 
