@@ -2,6 +2,7 @@ import { Vibi } from "../src/vibi.ts";
 import { on_sync, ping, gen_name } from "../src/client.ts";
 
 type Chaser = {
+    role: "chaser";
     x: number;
     y: number;
     score: number;
@@ -10,8 +11,9 @@ type Chaser = {
 type Avatar = "woman" | "man" 
 
 type ChasedPlayer = {
-  px: number;
-  py: number;
+  role: "chased";
+  x: number;
+  y: number;
   w: number;
   a: number;
   s: number;
@@ -41,15 +43,28 @@ function on_tick(state: GameState): GameState {
   const new_state: GameState = {};
 
   for (const [char, player] of Object.entries(state)) {
-    if ('')
-    new_state[char] = {
-      x: player.x + (player.d * PIXELS_PER_TICK) + (player.a * -PIXELS_PER_TICK),
-      py: player.py + (player.s * PIXELS_PER_TICK) + (player.w * -PIXELS_PER_TICK),
-      w: player.w,
-      a: player.a,
-      s: player.s,
-      d: player.d,
-    };
+    switch (player.role) {
+      case "chased":
+        new_state[char] = {
+          role: player.role,
+          x: player.x + (player.d * PIXELS_PER_TICK) + (player.a * -PIXELS_PER_TICK),
+          y: player.y + (player.s * PIXELS_PER_TICK) + (player.w * -PIXELS_PER_TICK),
+          w: player.w,
+          a: player.a,
+          s: player.s,
+          d: player.d,
+          avatar: player.avatar
+        };
+        break;
+      case "chaser":
+          new_state[char] = {
+          role: player.role,
+          x: player.x,// logic for mous
+          y: player.y,// logic for mouse
+          score: player.score
+        };
+        break;
+    }
 
   }
 
@@ -95,9 +110,15 @@ let room = prompt("Enter room name:");
 if (!room) room = gen_name();
 
 const nick = prompt("Enter your nickname (single character):");
-if (!nick || nick.length !== 1) {
-  alert("Nickname must be exactly one character!");
-  throw new Error("Nickname must be one character");
+if (!nick) {
+  alert("Nickname must have at least one character!");
+  throw new Error("Nickname must have at least one character");
+}
+
+const choosen_avatar = prompt("Choose your avatar: chaser or chased");
+if (!choosen_avatar  || !["chaser", "chased"].includes(choosen_avatar)) {
+  alert("Avatar must be either 'chaser' or 'chased'!");
+  throw new Error("Avatar must be either 'chaser' or 'chased'");
 }
 
 console.log("[GAME] Room:", room, "Nick:", nick);
