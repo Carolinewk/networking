@@ -1,24 +1,25 @@
 import { Vibi } from "../src/vibi.ts";
 import { on_sync, ping, gen_name } from "../src/client.ts";
 
+type Role = "chaser" | "chased";
+type Avatar = "woman" | "man" | undefined
+
 type Chaser = {
-    role: "chaser";
+    role: Role;
     x: number;
     y: number;
     score: number;
 };
 
-type Avatar = "woman" | "man" 
-
 type ChasedPlayer = {
-  role: "chased";
-  x: number;
-  y: number;
-  w: number;
-  a: number;
-  s: number;
-  d: number;
-  avatar: Avatar
+    role: Role;
+    x: number;
+    y: number;
+    w: number;
+    a: number;
+    s: number;
+    d: number;
+    avatar: Avatar
 };
 
 type GameState = {
@@ -26,11 +27,11 @@ type GameState = {
 };
 
 type GamePost =
-  | { $: "spawn"; nick: string; role: Chaser | ChasedPlayer; avatar: Avatar; px: number; py: number }
+  | { $: "spawn"; nick: string; role: Role; avatar: Avatar; x: number; y: number }
   | { $: "down"; key: "w" | "a" | "s" | "d"; player: string }
   | { $: "up"; key: "w" | "a" | "s" | "d"; player: string }
-  | { $: "click"; role: Chaser | ChasedPlayer; x: number; y: number;}
-  | { $: "move_mouse"; role: Chaser | ChasedPlayer; x: number; y: number; };
+  | { $: "click"; role: Role; x: number; y: number;}
+  | { $: "move_mouse"; role: Role; x: number; y: number; };
 
 const TICK_RATE         = 30; // ticks per second
 const TOLERANCE         = 100; // max tolerance in ms (adaptive per client)
@@ -71,12 +72,17 @@ function on_tick(state: GameState): GameState {
   return new_state;
 }
 
-// on_post: handle player commands
 function on_post(post: GamePost, state: GameState): GameState {
   switch (post.$) {
     case "spawn": {
-      const player = { px: 200, py: 200, w: 0, a: 0, s: 0, d: 0 };
-      return { ...state, [post.nick]: player };
+      if (post.role === "chaser") {
+        const player = { role: post.role, x : 400, y: 400, score: 0 }
+        return { ...state, [post.nick]: player };
+      } else if (post.role === "chased") {
+        const player = {role: post.role, x: 200, y: 200, w: 0, a: 0, s: 0, d: 0, avatar: post.avatar};
+        return { ...state, [post.nick]: player };
+      }
+      break
     }
     case "down": {
       const updated = { ...state[post.player], [post.key]: 1 };
@@ -85,6 +91,12 @@ function on_post(post: GamePost, state: GameState): GameState {
     case "up": {
       const updated = { ...state[post.player], [post.key]: 0 };
       return { ...state, [post.player]: updated };
+    }
+    case "move_mouse": {
+        if (post.role === "chased") {
+            return state;
+        }
+        const updated = { ...state, }
     }
   }
   return state;
@@ -115,13 +127,32 @@ if (!nick) {
   throw new Error("Nickname must have at least one character");
 }
 
-const choosen_avatar = prompt("Choose your avatar: chaser or chased");
-if (!choosen_avatar  || !["chaser", "chased"].includes(choosen_avatar)) {
+const role_input = prompt("Choose your role: chaser or chased");
+if (!role_input  || !["chaser", "chased"].includes(role_input)) {
   alert("Avatar must be either 'chaser' or 'chased'!");
   throw new Error("Avatar must be either 'chaser' or 'chased'");
 }
 
-console.log("[GAME] Room:", room, "Nick:", nick);
+const choosen_role = role_input as Role;
+
+let avatar_input = undefined;
+
+switch (choosen_role) {
+    case "chased":
+        avatar_input = prompt("Choose your avatar: woman or man");
+        if (!avatar_input || avatar_input !== "woman" && avatar_input !== "man") {
+            alert("Avatar must be either woman or man");
+            throw new Error("Avatar must be either woman or man");
+        }
+        break;
+    case "chaser":
+        avatar_input = undefined;
+        break;
+}
+
+const choosen_avatar : Avatar = avatar_input;
+
+console.log("[GAME] Room:", room, "Nick:", nick, "Role", choosen_role);
 
 const smooth = (past: GameState, curr: GameState): GameState => {
   if (curr[nick]) {
@@ -131,15 +162,15 @@ const smooth = (past: GameState, curr: GameState): GameState => {
 };
 
 const game: Vibi<GameState, GamePost> = create_game(room, smooth);
-// document.title = `Walkers ${pkg.version}`;
-
 const key_states: Record<string, boolean> = { w: false, a: false, s: false, d: false };
 
 on_sync(() => {
-  const spawn_x = 200;
-  const spawn_y = 200;
+  const spawn_x = choosen_role === "chased" ? 200 : 400;
+  const spawn_y = choosen_role === "chased" ? 200 : 400;
+
   console.log(`[GAME] Synced; spawning '${nick}' at (${spawn_x},${spawn_y})`);
-  game.post({ $: "spawn", nick: nick, px: spawn_x, py: spawn_y });
+
+  game.post({ $: "spawn", nick: nick, role: choosen_role, avatar: choosen_avatar, x: spawn_x, y: spawn_y });
 
   const valid_keys = new Set(["w", "a", "s", "d"]);
 
@@ -152,15 +183,39 @@ on_sync(() => {
     }
 
     if (key_states[key] === is_down) {
-      return; // no state change (filters repeats)
+      return;
     }
 
     key_states[key] = is_down;
     const action = is_down ? "down" : "up";
     game.post({ $: action, key: key as any, player: nick });
   }
+
+  function handle_mouse_event(e: MouseEvent) {
+    
+    if (choosen_role === "chased") {
+        return;
+    }
+
+    const rect = canvas.getBoundingClientRect(); // where is the canvas in the page
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    switch (e.type) {
+        case "mousemove":
+            game.post( { $: "move_mouse", role: choosen_role, x: x, y: y });
+            break;
+        case "click":
+            game.post( { $: "click", role: choosen_role, x: x, y: y });
+            break;
+    }
+  }
+
   window.addEventListener("keydown", handle_key_event);
   window.addEventListener("keyup", handle_key_event);
+
+  window.addEventListener("mousemove", handle_mouse_event);
+  window.addEventListener("click", handle_mouse_event);
 
   setInterval(render, 1000 / TICK_RATE);
 });

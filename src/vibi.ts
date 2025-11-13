@@ -53,24 +53,19 @@ export class Vibi<S, P> {
     this.room_posts  = new Map();
     this.local_posts = new Map();
 
-    // Wait for initial time sync before interacting with server
     client.on_sync(() => {
       console.log(`[VIBI] synced; watching+loading room=${this.room}`);
-      // Watch the room with callback
       client.watch(this.room, (post) => {
-        // If this official post matches a local predicted one, drop the local copy
         if (post.name && this.local_posts.has(post.name)) {
           this.local_posts.delete(post.name);
         }
         this.room_posts.set(post.index, post);
       });
 
-      // Load all existing posts
       client.load(this.room, 0);
     });
   }
 
-  // No extra helpers needed with local_posts: simplicity preserved
 
   time_to_tick(server_time: number): number {
     return Math.floor((server_time * this.tick_rate) / 1000);
