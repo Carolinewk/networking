@@ -22,15 +22,14 @@ export class Vibi<S, P> {
 
   // Compute the authoritative time a post takes effect.
   private official_time(post: Post<P>): number {
-    const tol_ms = this.adaptive_tolerance_ms();
-    if (post.client_time <= post.server_time - tol_ms) {
-      return post.server_time - tol_ms;
+    const tolerance_ms = this.adaptive_tolerance_ms();
+    if (post.client_time <= post.server_time - tolerance_ms) {
+      return post.server_time - tolerance_ms;
     } else {
       return post.client_time;
     }
   }
 
-  // Convert a post into its authoritative tick.
   private official_tick(post: Post<P>): number {
     return this.time_to_tick(this.official_time(post));
   }
