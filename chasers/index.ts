@@ -96,7 +96,16 @@ function on_post(post: GamePost, state: GameState): GameState {
         if (post.role === "chased") {
             return state;
         }
-        const updated = { ...state, }
+        // Update all chasers' positions to the mouse coordinates
+        const updated_state: GameState = {};
+        for (const [char, player] of Object.entries(state)) {
+          if (player.role === "chaser") {
+            updated_state[char] = { role: player.role, x: post.x, y: post.y, score: player.score };
+          } else {
+            updated_state[char] = player;
+          }
+        }
+        return updated_state;
     }
   }
   return state;
