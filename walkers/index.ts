@@ -88,11 +88,12 @@ window.addEventListener("resize", resize_canvas);
 let room = prompt("Enter room name:");
 if (!room) room = gen_name();
 
-const nick = prompt("Enter your nickname (single character):");
-if (!nick || nick.length !== 1) {
+const nick_input = (prompt("Enter your nickname (single character):")?.trim() ?? "");
+if (!nick_input || nick_input.length !== 1) {
   alert("Nickname must be exactly one character!");
   throw new Error("Nickname must be one character");
 }
+const nick: string = nick_input;
 
 console.log("[GAME] Room:", room, "Nick:", nick);
 

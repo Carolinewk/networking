@@ -5,14 +5,14 @@ type Role = "chaser" | "chased";
 type Avatar = "woman" | "man" | undefined
 
 type Chaser = {
-    role: Role;
+    role: "chaser";
     x: number;
     y: number;
     score: number;
 };
 
 type ChasedPlayer = {
-    role: Role;
+    role: "chased";
     x: number;
     y: number;
     w: number;
@@ -31,7 +31,7 @@ type GamePost =
   | { $: "down"; key: "w" | "a" | "s" | "d"; player: string }
   | { $: "up"; key: "w" | "a" | "s" | "d"; player: string }
   | { $: "click"; role: Role; x: number; y: number;}
-  | { $: "move_mouse"; role: Role; x: number; y: number; };
+  | { $: "move_mouse"; player: string; x: number; y: number };
 
 const TICK_RATE         = 30; // ticks per second
 const TOLERANCE         = 100; // max tolerance in ms (adaptive per client)
@@ -60,8 +60,8 @@ function on_tick(state: GameState): GameState {
       case "chaser":
           new_state[char] = {
           role: player.role,
-          x: player.x,// logic for mous
-          y: player.y,// logic for mouse
+          x: player.x,
+          y: player.y,
           score: player.score
         };
         break;
@@ -85,27 +85,25 @@ function on_post(post: GamePost, state: GameState): GameState {
       break
     }
     case "down": {
-      const updated = { ...state[post.player], [post.key]: 1 };
+      const p = state[post.player];
+      if (!p || p.role !== "chased") return state;
+      const updated: ChasedPlayer = { ...p };
+      updated[post.key] = 1;
       return { ...state, [post.player]: updated };
     }
     case "up": {
-      const updated = { ...state[post.player], [post.key]: 0 };
+      const p = state[post.player];
+      if (!p || p.role !== "chased") return state;
+      const updated: ChasedPlayer = { ...p };
+      updated[post.key] = 0;
       return { ...state, [post.player]: updated };
     }
     case "move_mouse": {
-        if (post.role === "chased") {
-            return state;
-        }
-        // Update all chasers' positions to the mouse coordinates
-        const updated_state: GameState = {};
-        for (const [char, player] of Object.entries(state)) {
-          if (player.role === "chaser") {
-            updated_state[char] = { role: player.role, x: post.x, y: post.y, score: player.score };
-          } else {
-            updated_state[char] = player;
-          }
-        }
-        return updated_state;
+      const player = state[post.player];
+      if (player.role !== "chaser") return state;
+      
+      const updated = { ...player, x: post.x, y: post.y };
+      return { ...state, [post.player]: updated };
     }
   }
   return state;
@@ -130,11 +128,12 @@ window.addEventListener("resize", resize_canvas);
 let room = prompt("Enter room name:");
 if (!room) room = gen_name();
 
-const nick = prompt("Enter your nickname (single character):");
-if (!nick) {
+const nick_input = (prompt("Enter your nickname (single character):")?.trim() ?? "");
+if (!nick_input) {
   alert("Nickname must have at least one character!");
   throw new Error("Nickname must have at least one character");
 }
+const nick: string = nick_input;
 
 const role_input = prompt("Choose your role: chaser or chased");
 if (!role_input  || !["chaser", "chased"].includes(role_input)) {
@@ -206,16 +205,16 @@ on_sync(() => {
         return;
     }
 
-    const rect = canvas.getBoundingClientRect(); // where is the canvas in the page
+    const rect = canvas.getBoundingClientRect(); // it gets where is the canvas in the page
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
     switch (e.type) {
         case "mousemove":
-            game.post( { $: "move_mouse", role: choosen_role, x: x, y: y });
+            game.post({ $: "move_mouse", player: nick, x, y });
             break;
         case "click":
-            game.post( { $: "click", role: choosen_role, x: x, y: y });
+            game.post({ $: "click", role: choosen_role, x, y });
             break;
     }
   }
@@ -236,7 +235,6 @@ function render() {
   const curr_tick = game.server_tick();
   const state     = game.compute_render_state(); // retorna no passado caso a atualizacoa de state seja do player
 
-  // ctx.fillStyle    = "#000";
   ctx.font         = "14px monospace";
   ctx.textAlign    = "left";
   ctx.textBaseline = "top";
@@ -262,8 +260,8 @@ function render() {
   ctx.textBaseline = "middle";
 
   for (const [char, player] of Object.entries(state)) {
-    const x = Math.floor(player.px);
-    const y = Math.floor(player.py);
+    const x = Math.floor(player.x);
+    const y = Math.floor(player.y);
     ctx.fillText(char, x, y);
   }
 }

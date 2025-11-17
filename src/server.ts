@@ -23,9 +23,9 @@ import { readFile } from "fs/promises";
 
 async function build_chasers() {
   try {
-    const r1 = Bun.spawnSync({ cmd: [process.execPath, "build", "src/client.ts", "--outdir", "chasers/dist", "--target=browser", "--format=esm"] });
-    const r2 = Bun.spawnSync({ cmd: [process.execPath, "build", "src/vibi.ts", "--outdir", "chasers/dist", "--target=browser", "--format=esm"] });
-    const r3 = Bun.spawnSync({ cmd: [process.execPath, "build", "chasers/index.ts", "--outdir", "chasers/dist", "--target=browser", "--format=esm"] });
+    const r1 = Bun.spawnSync({ cmd: [process.execPath, "build", "src/client.ts", "--outdir", "chasers/dist", "--target=browser", "--sourcemap", "--format=esm"] });
+    const r2 = Bun.spawnSync({ cmd: [process.execPath, "build", "src/vibi.ts", "--outdir", "chasers/dist", "--target=browser", "--sourcemap", "--format=esm"] });
+    const r3 = Bun.spawnSync({ cmd: [process.execPath, "build", "chasers/index.ts", "--outdir", "chasers/dist", "--target=browser", "--sourcemap", "--format=esm"] });
     if (!r1.success || !r2.success || !r3.success) {
       console.error("[BUILD] chasers build failed", { r1: r1.success, r2: r2.success, r3: r3.success });
     } else {
