@@ -30,7 +30,7 @@ type GamePost =
   | { $: "spawn"; nick: string; role: Role; avatar: Avatar; x: number; y: number }
   | { $: "down"; key: "w" | "a" | "s" | "d"; player: string }
   | { $: "up"; key: "w" | "a" | "s" | "d"; player: string }
-  | { $: "click"; role: Role; x: number; y: number;}
+  | { $: "click"; player: string; role: Role; x: number; y: number;}
   | { $: "move_mouse"; player: string; x: number; y: number };
 
 const TICK_RATE         = 30; // ticks per second
@@ -104,6 +104,18 @@ function on_post(post: GamePost, state: GameState): GameState {
       
       const updated = { ...player, x: post.x, y: post.y };
       return { ...state, [post.player]: updated };
+    }
+    case "click": {
+      const player = state[post.player];
+      const x = post.x;
+      const y = post.y;
+      if (player.role !== "chaser") return state;
+      for (const [char, chased] of Object.entries(state)) {
+        if (chased.role !== "chased") continue;
+        if (chased.x <= x + 7 && chased.y >= y - 7 && chased.x >= x - 7 && chased.y <= y + 7) {
+          return { ...state, [post.player]: { ...player, score: player.score + 1}}
+        }
+      }
     }
   }
   return state;
@@ -214,7 +226,7 @@ on_sync(() => {
             game.post({ $: "move_mouse", player: nick, x, y });
             break;
         case "click":
-            game.post({ $: "click", role: choosen_role, x, y });
+            game.post({ $: "click", player: nick, role: choosen_role, x, y });
             break;
     }
   }
@@ -222,7 +234,7 @@ on_sync(() => {
   window.addEventListener("keydown", handle_key_event);
   window.addEventListener("keyup", handle_key_event);
 
-  window.addEventListener("mousemove", handle_mouse_event);
+  // window.addEventListener("mousemove", handle_mouse_event);
   window.addEventListener("click", handle_mouse_event);
 
   setInterval(render, 1000 / TICK_RATE);
@@ -231,6 +243,7 @@ on_sync(() => {
 function render() {
   ctx.fillStyle = "#768d9cff";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
+  
 
   const curr_tick = game.server_tick();
   const state     = game.compute_render_state(); // retorna no passado caso a atualizacoa de state seja do player
@@ -238,6 +251,7 @@ function render() {
   ctx.font         = "14px monospace";
   ctx.textAlign    = "left";
   ctx.textBaseline = "top";
+  ctx.fillStyle    = "#fff";
 
   try {
     const st  = game.server_time();
@@ -248,13 +262,13 @@ function render() {
     ctx.fillText(`time: ${st}`, 8, 24);
     ctx.fillText(`tick: ${curr_tick}`, 8, 42);
     ctx.fillText(`post: ${pc}`, 8, 60);
-
+    ctx.fillText(`chaser score: ${state[nick] && state[nick].role === "chaser" ? (state[nick] as Chaser).score : 0}`, 8, 78); // try to rewrite this
     if (isFinite(rtt)) {
-      ctx.fillText(`ping: ${Math.round(rtt)} ms`, 8, 78);
+      ctx.fillText(`ping: ${Math.round(rtt)} ms`, 8, 96);
     }
   } catch {}
 
-  ctx.fillStyle    = "#000";
+  ctx.fillStyle    = "#fff";
   ctx.font         = "24px monospace";
   ctx.textAlign    = "center";
   ctx.textBaseline = "middle";
