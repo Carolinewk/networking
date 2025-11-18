@@ -135,6 +135,7 @@ function resize_canvas() {
   canvas.height = window.innerHeight;
 }
 resize_canvas();
+
 window.addEventListener("resize", resize_canvas);
 
 let room = prompt("Enter room name:");
@@ -234,17 +235,23 @@ on_sync(() => {
   window.addEventListener("keydown", handle_key_event);
   window.addEventListener("keyup", handle_key_event);
 
-  // window.addEventListener("mousemove", handle_mouse_event);
   window.addEventListener("click", handle_mouse_event);
 
   setInterval(render, 1000 / TICK_RATE);
 });
 
 function render() {
-  ctx.fillStyle = "#768d9cff";
+  ctx.fillStyle = "#738bbdff";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   
+  const gameAreaWidth = 1200;
+  const gameAreaHeight = 800;
+  const positionX = (canvas.width - gameAreaWidth) / 2;
+  const positionY = (canvas.height - gameAreaHeight) / 2;
 
+  ctx.fillStyle = "#e6bca1ff"
+  ctx.fillRect(positionX, positionY, gameAreaWidth, gameAreaHeight);
+  
   const curr_tick = game.server_tick();
   const state     = game.compute_render_state(); // retorna no passado caso a atualizacoa de state seja do player
 
