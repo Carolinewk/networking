@@ -38,6 +38,12 @@ const TOLERANCE         = 100; // max tolerance in ms (adaptive per client)
 const PIXELS_PER_SECOND = 200;
 const PIXELS_PER_TICK   = PIXELS_PER_SECOND / TICK_RATE;
 
+const canvas: HTMLCanvasElement = document.getElementById("game") as HTMLCanvasElement;
+const ctx = canvas.getContext("2d")!;
+
+const GAME_WIDTH  = 1200;
+const GAME_HEIGHT = Math.min(800, window.innerHeight)
+
 const initial: GameState = {};
 
 function on_tick(state: GameState): GameState {
@@ -45,11 +51,16 @@ function on_tick(state: GameState): GameState {
 
   for (const [char, player] of Object.entries(state)) {
     switch (player.role) {
-      case "chased":
+      case "chased": {
+        const nextX = player.x + (player.d * PIXELS_PER_TICK) + (player.a * -PIXELS_PER_TICK);
+        const nextY = player.y + (player.s * PIXELS_PER_TICK) + (player.w * -PIXELS_PER_TICK);
+        const clampedX = Math.max(0, Math.min(GAME_WIDTH, nextX));
+        const clampedY = Math.max(0, Math.min(GAME_HEIGHT, nextY));
+
         new_state[char] = {
           role: player.role,
-          x: player.x + (player.d * PIXELS_PER_TICK) + (player.a * -PIXELS_PER_TICK),
-          y: player.y + (player.s * PIXELS_PER_TICK) + (player.w * -PIXELS_PER_TICK),
+          x: clampedX,
+          y: clampedY,
           w: player.w,
           a: player.a,
           s: player.s,
@@ -57,14 +68,18 @@ function on_tick(state: GameState): GameState {
           avatar: player.avatar
         };
         break;
-      case "chaser":
-          new_state[char] = {
+      }
+      case "chaser": {
+        const clampedX = Math.max(0, Math.min(GAME_WIDTH, player.x));
+        const clampedY = Math.max(0, Math.min(GAME_HEIGHT, player.y));
+        new_state[char] = {
           role: player.role,
-          x: player.x,
-          y: player.y,
+          x: clampedX,
+          y: clampedY,
           score: player.score
         };
         break;
+      }
     }
 
   }
@@ -98,13 +113,15 @@ function on_post(post: GamePost, state: GameState): GameState {
       updated[post.key] = 0;
       return { ...state, [post.player]: updated };
     }
-    case "move_mouse": {
-      const player = state[post.player];
-      if (player.role !== "chaser") return state;
-      
-      const updated = { ...player, x: post.x, y: post.y };
-      return { ...state, [post.player]: updated };
-    }
+    // case "move_mouse": {
+    //   const player = state[post.player];
+    //   if (player.role !== "chaser") return state;
+    //   // Incoming coordinates are in world space; clamp to game bounds
+    //   const x = Math.max(0, Math.min(GAME_WIDTH, post.x));
+    //   const y = Math.max(0, Math.min(GAME_HEIGHT, post.y));
+    //   const updated = { ...player, x, y };
+    //   return { ...state, [post.player]: updated };
+    // }
     case "click": {
       const player = state[post.player];
       const x = post.x;
@@ -125,10 +142,6 @@ function on_post(post: GamePost, state: GameState): GameState {
 export function create_game(room: string, smooth: (past: GameState, curr: GameState) => GameState) {
   return new Vibi<GameState, GamePost>(room, initial, on_tick, on_post, smooth, TICK_RATE, TOLERANCE);
 }
-
-// ---- App bootstrap (no JS in HTML) ----
-const canvas: HTMLCanvasElement = document.getElementById("game") as HTMLCanvasElement;
-const ctx = canvas.getContext("2d")!;
 
 function resize_canvas() {
   canvas.width = window.innerWidth;
@@ -218,14 +231,24 @@ on_sync(() => {
         return;
     }
 
-    const rect = canvas.getBoundingClientRect(); // it gets where is the canvas in the page
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const rect = canvas.getBoundingClientRect(); // canvas position on the page
+
+    const gameLeft = (canvas.width - GAME_WIDTH) / 2;
+    const gameTop  = (canvas.height - GAME_HEIGHT) / 2;
+
+    const xCanvas = e.clientX - rect.left;
+    const yCanvas = e.clientY - rect.top;
+
+    const xWorldUnclamped = xCanvas - gameLeft;
+    const yWorldUnclamped = yCanvas - gameTop;
+
+    const x = Math.max(0, Math.min(GAME_WIDTH, xWorldUnclamped));
+    const y = Math.max(0, Math.min(GAME_HEIGHT, yWorldUnclamped));
 
     switch (e.type) {
-        case "mousemove":
-            game.post({ $: "move_mouse", player: nick, x, y });
-            break;
+        // case "mousemove":
+        //     game.post({ $: "move_mouse", player: nick, x, y });
+        //     break;
         case "click":
             game.post({ $: "click", player: nick, role: choosen_role, x, y });
             break;
@@ -236,6 +259,8 @@ on_sync(() => {
   window.addEventListener("keyup", handle_key_event);
 
   window.addEventListener("click", handle_mouse_event);
+ 
+  // window.addEventListener("mousemove", handle_mouse_event);
 
   setInterval(render, 1000 / TICK_RATE);
 });
@@ -244,13 +269,24 @@ function render() {
   ctx.fillStyle = "#738bbdff";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   
-  const gameAreaWidth = 1200;
-  const gameAreaHeight = 800;
+  const gameAreaWidth = GAME_WIDTH;
+  const gameAreaHeight = Math.min(GAME_HEIGHT, canvas.height);
   const positionX = (canvas.width - gameAreaWidth) / 2;
   const positionY = (canvas.height - gameAreaHeight) / 2;
 
   ctx.fillStyle = "#e6bca1ff"
-  ctx.fillRect(positionX, positionY, gameAreaWidth, gameAreaHeight);
+  ctx.strokeStyle = "#eb8532ff"
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.rect(positionX, positionY, gameAreaWidth, gameAreaHeight);
+  ctx.fill();
+  ctx.strokeRect(positionX + 0.5, positionY + 0.5, gameAreaWidth, gameAreaHeight);
+
+  // create a clipping mask so everything else cant be drawn outside the game
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(positionX, positionY, gameAreaWidth, gameAreaHeight);
+  ctx.clip(); 
   
   const curr_tick = game.server_tick();
   const state     = game.compute_render_state(); // retorna no passado caso a atualizacoa de state seja do player
@@ -281,8 +317,11 @@ function render() {
   ctx.textBaseline = "middle";
 
   for (const [char, player] of Object.entries(state)) {
-    const x = Math.floor(player.x);
-    const y = Math.floor(player.y);
+    // Convert world → screen by adding the game rectangle offset
+    const x = Math.floor(positionX + player.x);
+    const y = Math.floor(positionY + player.y);
     ctx.fillText(char, x, y);
   }
+
+  ctx.restore()
 }
