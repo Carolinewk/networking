@@ -382,7 +382,7 @@ function render() {
     const img = frame === 0 ? psyduck : psyduckLeft;
     const imgReady = frame === 0 ? psyduckLoaded : psyduckLeftLoaded;
     if (imgReady) {
-      ctx.drawImage(img, x, y, 30, 40);
+      ctx.drawImage(img, x, y, 60, 80);
     }
 
     // Persist updated state for this prey

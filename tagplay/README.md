@@ -1,11 +1,11 @@
-# Walkers - Multiplayer Browser Game
+# Tagplay - Multiplayer Browser Game
 
 A simple multiplayer game demo built with the Vibi system. Players control walkers (single-letter avatars) that move around a 2D space.
 
 ## Project Structure
 
 ```
-walkers/
+tagplay/
 ├── index.ts          # Game logic + bootstrap (no JS in HTML)
 ├── index.html        # Game UI with canvas (no inline JS)
 ├── dist/             # Compiled JavaScript files (built automatically)

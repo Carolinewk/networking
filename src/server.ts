@@ -21,22 +21,22 @@ import { readFile } from "fs/promises";
 
 // await build_walkers();
 
-async function build_chasers() {
+async function build_tagplay() {
   try {
-    const r1 = Bun.spawnSync({ cmd: [process.execPath, "build", "src/client.ts", "--outdir", "chasers/dist", "--target=browser", "--sourcemap", "--format=esm"] });
-    const r2 = Bun.spawnSync({ cmd: [process.execPath, "build", "src/vibi.ts", "--outdir", "chasers/dist", "--target=browser", "--sourcemap", "--format=esm"] });
-    const r3 = Bun.spawnSync({ cmd: [process.execPath, "build", "chasers/index.ts", "--outdir", "chasers/dist", "--target=browser", "--sourcemap", "--format=esm"] });
+    const r1 = Bun.spawnSync({ cmd: [process.execPath, "build", "src/client.ts", "--outdir", "tagplay/dist", "--target=browser", "--sourcemap", "--format=esm"] });
+    const r2 = Bun.spawnSync({ cmd: [process.execPath, "build", "src/vibi.ts", "--outdir", "tagplay/dist", "--target=browser", "--sourcemap", "--format=esm"] });
+    const r3 = Bun.spawnSync({ cmd: [process.execPath, "build", "tagplay/index.ts", "--outdir", "tagplay/dist", "--target=browser", "--sourcemap", "--format=esm"] });
     if (!r1.success || !r2.success || !r3.success) {
-      console.error("[BUILD] chasers build failed", { r1: r1.success, r2: r2.success, r3: r3.success });
+      console.error("[BUILD] tagplay build failed", { r1: r1.success, r2: r2.success, r3: r3.success });
     } else {
-      console.log("[BUILD] chasers bundle ready");
+      console.log("[BUILD] tagplay bundle ready");
     }
   } catch (e) {
-    console.error("[BUILD] error while building chasers:", e);
+    console.error("[BUILD] error while building tagplay:", e);
   }
 }
 
-await build_chasers();
+await build_tagplay();
 
 // Simple static server + WebSocket on the same port
 const server = http.createServer(async (req, res) => {
@@ -47,7 +47,7 @@ const server = http.createServer(async (req, res) => {
 
     let filesystem_path: string;
     // filesystem_path = path.startsWith("/dist/") ? `walkers${path}` : `walkers${path}`;
-    filesystem_path = path.startsWith("/dist/") ? `chasers${path}` : `chasers${path}`;
+    filesystem_path = path.startsWith("/dist/") ? `tagplay${path}` : `tagplay${path}`;
 
     let ct = "application/octet-stream";
     if (path.endsWith(".html")) {
