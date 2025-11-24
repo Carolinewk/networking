@@ -5,20 +5,410 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>tagplay</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Fredoka:wght@600;700&display=swap');
+
+    :root {
+      --sunrise-stop-1: #fff3a2;
+      --sunrise-stop-2: #ffd447;
+      --sunrise-stop-3: #f2a93b;
+      --sunrise: linear-gradient(
+        126deg,
+        var(--sunrise-stop-1) 12%,
+        var(--sunrise-stop-2) 55%,
+        var(--sunrise-stop-3) 96%
+      );
+      --sunrise-heading: linear-gradient(
+        126deg,
+        #ffe272 12%,
+        #ffd23a 56%,
+        #e4971c 96%
+      );
+      --hud-sky: linear-gradient(135deg, #fff6c4 0%, #ffe47a 46%, #ffc947 100%);
+      --hud-border: #ffffff;
+      --role-stroke: #f7dfa8;
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      color: #1f130b;
+      background: var(--sunrise);
+    }
+
+    * { box-sizing: border-box; }
+
     body {
       margin: 0;
-      padding: 0;
-      overflow: hidden;
-      background: #fff;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--sunrise);
     }
-/* 
+
+    #stage {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: var(--sunrise);
+    }
+
     #game {
-      cursor: url('./imgs/lolcursor.png') 8 8, auto;
-    } */
+      position: absolute;
+      inset: 0;
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: var(--sunrise-stop-2);
+      background: var(--sunrise);
+      z-index: 1;
+    }
+
+    #hud {
+      position: absolute;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      pointer-events: none;
+      z-index: 4;
+      padding: 0 16px;
+    }
+
+    #meta-card {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      z-index: 4;
+      pointer-events: none;
+    }
+
+    .stat-card {
+      min-width: 220px;
+      background: var(--hud-sky);
+      border: 2px solid var(--hud-border);
+      border-radius: 16px;
+      box-shadow: 0 10px 26px rgba(19, 64, 119, 0.25), 0 2px 8px rgba(19, 64, 119, 0.18);
+      padding: 12px 14px;
+      display: grid;
+      gap: 8px;
+      backdrop-filter: blur(2px);
+    }
+
+    .stat-card--meta {
+      width: 240px;
+      min-width: 240px;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px 12px;
+    }
+
+    .stat-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+      color: #0f2e4b;
+      text-transform: uppercase;
+    }
+
+    .stat-value {
+      font-size: 15px;
+      font-weight: 800;
+      color: #0b1f33;
+      font-family: 'Fredoka', 'Trebuchet MS', sans-serif;
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
+    }
+
+    .stat-value.pokemon {
+      font-family: 'Luckiest Guy', 'Fredoka', 'Trebuchet MS', sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: #0c2d60;
+      text-shadow:
+        -1px -1px 0 #ffd633,
+        1px -1px 0 #ffd633,
+        -1px 1px 0 #ffd633,
+        1px 1px 0 #ffd633,
+        0 3px 8px rgba(12, 45, 96, 0.25);
+    }
+
+    #setup-layer {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 200ms ease, transform 200ms ease;
+      pointer-events: auto;
+      z-index: 3;
+    }
+
+    #setup-layer.hidden {
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-8px);
+    }
+
+    #setup-card {
+      width: min(520px, 90vw);
+      background: rgba(255, 231, 198, 0.92);
+      border: 2px solid #deb452;
+      border-radius: 22px;
+      padding: 24px 22px 26px;
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.16);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    #setup-card h1 {
+      margin: 0;
+      font-size: 26px;
+      letter-spacing: 0.5px;
+      text-align: center;
+      background: var(--sunrise-heading);
+      color: transparent;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .setup-copy {
+      margin: 0;
+      color: #3b2815;
+      font-size: 15px;
+      line-height: 1.45;
+    }
+
+    label {
+      font-size: 13px;
+      font-weight: 700;
+      color: #2d1f10;
+      display: block;
+      margin-bottom: 6px;
+      letter-spacing: 0.3px;
+    }
+
+    input[type='text'] {
+      width: 100%;
+      border: 2px solid #deb452;
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 15px;
+      background: #fff7ea;
+      color: #1f150c;
+      outline: none;
+      transition: border-color 150ms ease, box-shadow 150ms ease;
+    }
+
+    input[type='text']:focus {
+      border-color: #7a4b1d;
+      box-shadow: 0 0 0 3px rgba(255, 193, 111, 0.35);
+    }
+
+    .stack {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .step-panel {
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      padding: 2px 0;
+    }
+
+    .step-panel.active {
+      display: flex;
+    }
+
+    .step-note {
+      margin: 0;
+      font-size: 12px;
+      color: #5c4630;
+    }
+
+    .role-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 2px;
+    }
+
+    .role-card {
+      border: 3px solid var(--role-stroke);
+      border-radius: 18px;
+      padding: 16px 14px;
+      background: var(--sunrise);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      cursor: pointer;
+      transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
+      aspect-ratio: 3 / 4;
+      min-height: 180px;
+      color: #1f130b;
+    }
+
+    .role-card img {
+      width: 76px;
+      height: 76px;
+      object-fit: contain;
+      display: block;
+      margin: 0 auto;
+      filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.16));
+    }
+
+    .role-card span {
+      font-weight: 800;
+      letter-spacing: 0.4px;
+      color: #21150b;
+    }
+
+    .role-card small {
+      display: block;
+      color: #5c4630;
+      font-weight: 600;
+      margin-top: 4px;
+      text-align: center;
+    }
+
+    .role-card.active {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.18);
+      border-color: #f0c56a;
+    }
+
+    #enter-game {
+      margin-top: 6px;
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 14px;
+      border: none;
+      background: var(--sunrise);
+      color: #1d1309;
+      font-weight: 800;
+      font-size: 15px;
+      cursor: pointer;
+      box-shadow: 0 14px 28px rgba(0, 0, 0, 0.18);
+      transition: transform 120ms ease, box-shadow 120ms ease;
+    }
+
+    #enter-game:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 18px 32px rgba(0, 0, 0, 0.22);
+    }
+
+    #enter-game:active {
+      transform: translateY(0);
+      box-shadow: 0 10px 18px rgba(0, 0, 0, 0.18);
+    }
+
+    #form-helper {
+      min-height: 18px;
+      font-size: 13px;
+      color: #7a4b1d;
+      margin: 0;
+    }
+
+    @media (max-width: 720px) {
+      #hud {
+        top: 10px;
+      }
+
+      .stat-card.stat-card--score {
+        width: min(320px, 100%);
+      }
+
+      .stat-card--meta {
+        width: 240px;
+        min-width: 240px;
+      }
+    }
   </style>
 </head>
 <body>
-  <canvas id="game"></canvas>
+  <div id="stage">
+    <div id="meta-card" class="stat-card stat-card--meta" aria-live="polite">
+      <div class="stat-grid">
+        <div class="stat-label">Room</div>
+        <div class="stat-value" id="hud-room">—</div>
+        <div class="stat-label">Time</div>
+        <div class="stat-value" id="hud-time">—</div>
+        <div class="stat-label">Tick</div>
+        <div class="stat-value" id="hud-tick">—</div>
+        <div class="stat-label">Post</div>
+        <div class="stat-value" id="hud-post">—</div>
+      </div>
+    </div>
+    <div id="hud">
+      <div class="stat-card stat-card--score" aria-live="polite">
+        <div class="stat-row">
+          <div class="stat-label">Trainer score</div>
+          <div class="stat-value pokemon" id="hud-score">0</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-label">Ping</div>
+          <div class="stat-value pokemon" id="hud-ping">—</div>
+        </div>
+      </div>
+    </div>
+    <canvas id="game"></canvas>
+    <div id="setup-layer">
+      <form id="setup-card" novalidate>
+        <h1>Tagplay Arena</h1>
+
+        <div class="stack">
+          <div class="step-panel active" data-step="room">
+            <label for="room-input">Room</label>
+            <input id="room-input" name="room" type="text" autocomplete="off" required />
+            <p class="step-note">Press Enter to lock in your room.</p>
+          </div>
+          <div class="step-panel" data-step="nick">
+            <label for="nick-input">Nickname</label>
+            <input id="nick-input" name="nick" type="text" autocomplete="off" required />
+            <p class="step-note">Press Enter to confirm your nickname.</p>
+          </div>
+          <div class="step-panel" data-step="role">
+            <label>Role</label>
+            <div class="role-grid">
+              <button type="button" class="role-card" data-role="chaser">
+                <img src="./img/pokeball.png" alt="Chaser pokeball" />
+                <div>
+                  <span>Chaser</span>
+                  <small>Throw the pokeball</small>
+                </div>
+              </button>
+              <button type="button" class="role-card" data-role="prey">
+                <img src="./img/psyduckright.png" alt="Prey psyduck" />
+                <div>
+                  <span>Prey</span>
+                  <small>Dodge around</small>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <p id="form-helper"></p>
+        <button id="enter-game" type="submit">Next: nickname</button>
+      </form>
+    </div>
+  </div>
   <script type="module" src="./dist/index.js"></script>
 </body>
 </html>
