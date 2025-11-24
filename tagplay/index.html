@@ -36,18 +36,34 @@
     body {
       margin: 0;
       min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       background: var(--sunrise);
     }
 
+    #layout {
+      width: min(1600px, 100%);
+      margin: 0 auto;
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr;
+      grid-template-areas:
+        "stage"
+        "pokedex";
+      gap: 18px;
+      align-items: start;
+      justify-items: center;
+      padding: 18px;
+    }
+
     #stage {
+      grid-area: stage;
       position: relative;
-      width: 100vw;
-      height: 100vh;
+      width: 100%;
+      height: min(900px, calc(100vh - 72px));
+      min-height: 640px;
       overflow: hidden;
       background: var(--sunrise);
+      border-radius: 24px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2), inset 0 0 0 3px rgba(255, 255, 255, 0.25);
     }
 
     #game {
@@ -63,84 +79,237 @@
       z-index: 1;
     }
 
-    #hud {
-      position: absolute;
-      top: 16px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      align-items: stretch;
-      justify-content: center;
-      pointer-events: none;
+    #pokedex {
+      grid-area: pokedex;
+      position: sticky;
+      top: 24px;
+      width: 100%;
+      max-width: 340px;
+      pointer-events: auto;
       z-index: 4;
-      padding: 0 16px;
+      justify-self: start;
+      align-self: center;
+      margin-inline: 0;
     }
 
-    #meta-card {
+    .pokedex-shell {
+      position: relative;
+      padding: 16px;
+      border-radius: 22px;
+      background: radial-gradient(circle at 20% 20%, #ff6b6b 0%, #d3272c 60%, #b61820 100%);
+      box-shadow: 0 18px 35px rgba(0, 0, 0, 0.24), inset 0 0 0 3px rgba(255, 255, 255, 0.35);
+      border: 3px solid #8d0f17;
+      overflow: hidden;
+      pointer-events: none;
+      min-height: 520px;
+    }
+
+    .pokedex-shell::after {
+      content: "";
       position: absolute;
-      top: 16px;
-      left: 16px;
-      z-index: 4;
+      inset: 12px;
+      border-radius: 18px;
+      border: 2px solid rgba(0, 0, 0, 0.08);
       pointer-events: none;
     }
 
-    .stat-card {
-      min-width: 220px;
-      background: var(--hud-sky);
-      border: 2px solid var(--hud-border);
-      border-radius: 16px;
-      box-shadow: 0 10px 26px rgba(19, 64, 119, 0.25), 0 2px 8px rgba(19, 64, 119, 0.18);
-      padding: 12px 14px;
-      display: grid;
-      gap: 8px;
-      backdrop-filter: blur(2px);
-    }
-
-    .stat-card--meta {
-      width: 240px;
-      min-width: 240px;
-    }
-
-    .stat-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 6px 12px;
-    }
-
-    .stat-row {
+    .pokedex-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
+      margin-bottom: 10px;
+      color: #ffe7c8;
+      text-transform: uppercase;
+      font-weight: 800;
+      letter-spacing: 1px;
+      font-size: 14px;
+    }
+
+    .pokedex-title {
+      background: linear-gradient(135deg, #fff3a2 0%, #ffe07b 45%, #ffc343 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      font-family: 'Luckiest Guy', 'Fredoka', 'Trebuchet MS', sans-serif;
+      letter-spacing: 1.5px;
+      font-size: 18px;
+    }
+
+    .pokedex-lights {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pokedex-light {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.4);
+      box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1), 0 0 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .pokedex-light.primary {
+      width: 16px;
+      height: 16px;
+      background: radial-gradient(circle at 30% 30%, #8ae2ff, #2d9be4 65%, #0b5ca8 100%);
+      box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.6), 0 0 12px rgba(45, 155, 228, 0.8);
+    }
+
+    .pokedex-light.amber { background: radial-gradient(circle at 40% 40%, #ffeaa7, #ff9f1a 70%, #c45a00 100%); }
+    .pokedex-light.lime  { background: radial-gradient(circle at 40% 40%, #d3ffb6, #7ad151 70%, #3f8c1c 100%); }
+
+    .pokedex-body {
+      background: linear-gradient(180deg, #fdf1d4 0%, #f3e4c0 65%, #e7d5a8 100%);
+      border-radius: 14px;
+      padding: 12px;
+      box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.08);
+    }
+
+    .pokedex-screen {
+      background: linear-gradient(180deg, #e8f7ff 0%, #d5edff 55%, #c8e4fb 100%);
+      border-radius: 12px;
+      padding: 12px;
+      border: 2px solid #7bb6e0;
+      box-shadow: inset 0 2px 10px rgba(12, 45, 96, 0.12);
+    }
+
+    .pokedex-section {
+      display: flex;
+      flex-direction: column;
       gap: 8px;
     }
 
-    .stat-label {
+    .pokedex-section + .pokedex-section {
+      margin-top: 10px;
+    }
+
+    .pokedex-section-label {
       font-size: 11px;
+      letter-spacing: 1px;
       font-weight: 800;
-      letter-spacing: 0.8px;
       color: #0f2e4b;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pokedex-section-label::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #ffcd38;
+      box-shadow: 0 0 0 2px rgba(255, 205, 56, 0.35);
+    }
+
+    .pokedex-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+
+    .pokedex-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.72);
+      box-shadow: inset 0 -1px 0 rgba(12, 45, 96, 0.06);
+    }
+
+    .pokedex-label {
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.6px;
+      color: #1d3c58;
       text-transform: uppercase;
     }
 
-    .stat-value {
+    .pokedex-value {
       font-size: 15px;
       font-weight: 800;
-      color: #0b1f33;
+      color: #0c2d60;
       font-family: 'Fredoka', 'Trebuchet MS', sans-serif;
       text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
     }
 
-    .stat-value.pokemon {
+    .pokedex-value.highlight {
       font-family: 'Luckiest Guy', 'Fredoka', 'Trebuchet MS', sans-serif;
-      text-transform: uppercase;
       letter-spacing: 0.8px;
-      color: #0c2d60;
+      color: #0b2f6b;
       text-shadow:
-        -1px -1px 0 #ffd633,
-        1px -1px 0 #ffd633,
-        -1px 1px 0 #ffd633,
-        1px 1px 0 #ffd633,
+        -1px -1px 0 #ffdf64,
+        1px -1px 0 #ffdf64,
+        -1px 1px 0 #ffdf64,
+        1px 1px 0 #ffdf64,
         0 3px 8px rgba(12, 45, 96, 0.25);
+    }
+
+    .pokedex-divider {
+      height: 12px;
+      margin: 12px 4px 10px;
+      background: repeating-linear-gradient(90deg, rgba(19, 64, 119, 0.2) 0, rgba(19, 64, 119, 0.2) 8px, rgba(19, 64, 119, 0.08) 8px, rgba(19, 64, 119, 0.08) 16px);
+      border-radius: 8px;
+      box-shadow: inset 0 0 0 1px rgba(19, 64, 119, 0.08);
+    }
+
+    @media (min-width: 1100px) {
+      #layout {
+        grid-template-columns: minmax(300px, 340px) 1fr;
+        grid-template-areas: "pokedex stage";
+        align-items: stretch;
+      }
+
+      #pokedex {
+        max-width: none;
+        justify-self: start;
+        margin-inline: 0;
+        transform: translateX(-12px);
+      }
+    }
+
+    @media (min-width: 1400px) {
+      #stage {
+        height: min(960px, calc(100vh - 72px));
+      }
+    }
+
+    @media (max-width: 1099px) {
+      #pokedex {
+        position: static;
+        max-width: 440px;
+        width: min(420px, 100%);
+        justify-self: center;
+        top: auto;
+        transform: none;
+        align-self: stretch;
+      }
+    }
+
+    @media (max-width: 900px) {
+      #layout {
+        padding: 12px;
+      }
+
+      #stage {
+        min-height: 520px;
+        height: min(760px, calc(100vh - 40px));
+      }
+
+      #pokedex {
+        width: min(360px, 100%);
+      }
+    }
+
+    @media (max-width: 720px) {
+      #stage {
+        height: min(640px, calc(100vh - 32px));
+      }
     }
 
     #setup-layer {
@@ -325,88 +494,103 @@
       margin: 0;
     }
 
-    @media (max-width: 720px) {
-      #hud {
-        top: 10px;
-      }
-
-      .stat-card.stat-card--score {
-        width: min(320px, 100%);
-      }
-
-      .stat-card--meta {
-        width: 240px;
-        min-width: 240px;
-      }
-    }
   </style>
 </head>
 <body>
-  <div id="stage">
-    <div id="meta-card" class="stat-card stat-card--meta" aria-live="polite">
-      <div class="stat-grid">
-        <div class="stat-label">Room</div>
-        <div class="stat-value" id="hud-room">—</div>
-        <div class="stat-label">Time</div>
-        <div class="stat-value" id="hud-time">—</div>
-        <div class="stat-label">Tick</div>
-        <div class="stat-value" id="hud-tick">—</div>
-        <div class="stat-label">Post</div>
-        <div class="stat-value" id="hud-post">—</div>
-      </div>
-    </div>
-    <div id="hud">
-      <div class="stat-card stat-card--score" aria-live="polite">
-        <div class="stat-row">
-          <div class="stat-label">Trainer score</div>
-          <div class="stat-value pokemon" id="hud-score">0</div>
-        </div>
-        <div class="stat-row">
-          <div class="stat-label">Ping</div>
-          <div class="stat-value pokemon" id="hud-ping">—</div>
-        </div>
-      </div>
-    </div>
-    <canvas id="game"></canvas>
-    <div id="setup-layer">
-      <form id="setup-card" novalidate>
-        <h1>Tagplay Arena</h1>
+  <div id="layout">
+    <div id="stage">
+      <canvas id="game"></canvas>
+      <div id="setup-layer">
+        <form id="setup-card" novalidate>
+          <h1>Tagplay Arena</h1>
 
-        <div class="stack">
-          <div class="step-panel active" data-step="room">
-            <label for="room-input">Room</label>
-            <input id="room-input" name="room" type="text" autocomplete="off" required />
-            <p class="step-note">Press Enter to lock in your room.</p>
+          <div class="stack">
+            <div class="step-panel active" data-step="room">
+              <label for="room-input">Room</label>
+              <input id="room-input" name="room" type="text" autocomplete="off" required />
+              <p class="step-note">Press Enter to lock in your room.</p>
+            </div>
+            <div class="step-panel" data-step="nick">
+              <label for="nick-input">Nickname</label>
+              <input id="nick-input" name="nick" type="text" autocomplete="off" required />
+              <p class="step-note">Press Enter to confirm your nickname.</p>
+            </div>
+            <div class="step-panel" data-step="role">
+              <label>Role</label>
+              <div class="role-grid">
+                <button type="button" class="role-card" data-role="chaser">
+                  <img src="./img/pokeball.png" alt="Chaser pokeball" />
+                  <div>
+                    <span>Chaser</span>
+                    <small>Throw the pokeball</small>
+                  </div>
+                </button>
+                <button type="button" class="role-card" data-role="prey">
+                  <img src="./img/psyduckright.png" alt="Prey psyduck" />
+                  <div>
+                    <span>Prey</span>
+                    <small>Dodge around</small>
+                  </div>
+                </button>
+              </div>
+            </div>
           </div>
-          <div class="step-panel" data-step="nick">
-            <label for="nick-input">Nickname</label>
-            <input id="nick-input" name="nick" type="text" autocomplete="off" required />
-            <p class="step-note">Press Enter to confirm your nickname.</p>
+
+          <p id="form-helper"></p>
+          <button id="enter-game" type="submit">Next: nickname</button>
+        </form>
+      </div>
+    </div>
+    <div id="pokedex" aria-live="polite">
+      <div class="pokedex-shell">
+        <div class="pokedex-header">
+          <div class="pokedex-lights">
+            <span class="pokedex-light primary"></span>
+            <span class="pokedex-light amber"></span>
+            <span class="pokedex-light lime"></span>
           </div>
-          <div class="step-panel" data-step="role">
-            <label>Role</label>
-            <div class="role-grid">
-              <button type="button" class="role-card" data-role="chaser">
-                <img src="./img/pokeball.png" alt="Chaser pokeball" />
-                <div>
-                  <span>Chaser</span>
-                  <small>Throw the pokeball</small>
+          <div class="pokedex-title">Pokedex</div>
+        </div>
+        <div class="pokedex-body">
+          <div class="pokedex-screen">
+            <div class="pokedex-section">
+              <div class="pokedex-section-label">Room data</div>
+              <div class="pokedex-grid">
+                <div class="pokedex-row">
+                  <div class="pokedex-label">Room</div>
+                  <div class="pokedex-value" id="hud-room">—</div>
                 </div>
-              </button>
-              <button type="button" class="role-card" data-role="prey">
-                <img src="./img/psyduckright.png" alt="Prey psyduck" />
-                <div>
-                  <span>Prey</span>
-                  <small>Dodge around</small>
+                <div class="pokedex-row">
+                  <div class="pokedex-label">Time</div>
+                  <div class="pokedex-value" id="hud-time">—</div>
                 </div>
-              </button>
+                <div class="pokedex-row">
+                  <div class="pokedex-label">Tick</div>
+                  <div class="pokedex-value" id="hud-tick">—</div>
+                </div>
+                <div class="pokedex-row">
+                  <div class="pokedex-label">Post</div>
+                  <div class="pokedex-value" id="hud-post">—</div>
+                </div>
+              </div>
+            </div>
+            <div class="pokedex-divider" aria-hidden="true"></div>
+            <div class="pokedex-section">
+              <div class="pokedex-section-label">Trainer</div>
+              <div class="pokedex-grid">
+                <div class="pokedex-row">
+                  <div class="pokedex-label">Trainer score</div>
+                  <div class="pokedex-value highlight" id="hud-score">0</div>
+                </div>
+                <div class="pokedex-row">
+                  <div class="pokedex-label">Ping</div>
+                  <div class="pokedex-value" id="hud-ping">—</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-
-        <p id="form-helper"></p>
-        <button id="enter-game" type="submit">Next: nickname</button>
-      </form>
+      </div>
     </div>
   </div>
   <script type="module" src="./dist/index.js"></script>

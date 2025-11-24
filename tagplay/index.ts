@@ -38,11 +38,12 @@ const PIXELS_PER_TICK   = PIXELS_PER_SECOND / TICK_RATE;
 const PREY_WIDTH        = 45;
 const PREY_HEIGHT       = 55;
 
-const canvas: HTMLCanvasElement = document.getElementById("game") as HTMLCanvasElement;
-const ctx = canvas.getContext("2d")!;
+const stage  = document.getElementById("stage") as HTMLDivElement;
+const canvas = document.getElementById("game") as HTMLCanvasElement;
+const ctx    = canvas.getContext("2d")!;
 
-const GAME_WIDTH  = 1100;
-const GAME_HEIGHT = Math.min(700, window.innerHeight)
+const GAME_WIDTH  = 1200;
+const GAME_HEIGHT = Math.min(820, Math.max(window.innerHeight, stage?.clientHeight ?? 0))
 const SUNRISE_ANGLE_DEG = 126;
 const SUNRISE_STOP_OFFSETS: [number, number, number] = [0.12, 0.55, 0.96];
 
@@ -160,8 +161,11 @@ export function create_game(room: string, smooth: (past: GameState, curr: GameSt
 }
 
 function resize_canvas() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+  const bounds = stage?.getBoundingClientRect();
+  const width  = bounds?.width ?? window.innerWidth;
+  const height = bounds?.height ?? window.innerHeight;
+  canvas.width = width;
+  canvas.height = height;
 }
 resize_canvas();
 
@@ -501,11 +505,11 @@ function render() {
     ping: pingDisplay
   });
 
-  ctx.strokeStyle = "#deb452"
+  ctx.strokeStyle = "#8fdeecff"
   ctx.lineWidth = 3;
   ctx.beginPath();
   ctx.rect(positionX, positionY, gameAreaWidth, gameAreaHeight);
-  ctx.fillStyle = "#f6de8b";
+  ctx.fillStyle = "#f5f0ddff";
   ctx.fill();
   ctx.strokeRect(positionX, positionY, gameAreaWidth, gameAreaHeight);
 
