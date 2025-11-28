@@ -505,7 +505,7 @@ function render() {
     ping: pingDisplay
   });
 
-  ctx.strokeStyle = "#8fdeecff"
+  ctx.strokeStyle = "#ecde8fff"
   ctx.lineWidth = 3;
   ctx.beginPath();
   ctx.rect(positionX, positionY, gameAreaWidth, gameAreaHeight);

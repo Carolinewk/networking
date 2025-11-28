@@ -269,7 +269,8 @@
         max-width: none;
         justify-self: start;
         margin-inline: 0;
-        transform: translateX(-12px);
+        /* Pull left on wide viewports so the pokedex sits centered in the gutter beside the game area. */
+        transform: translateX(min(0px, calc((1600px - 100vw) / 4)));
       }
     }
 
